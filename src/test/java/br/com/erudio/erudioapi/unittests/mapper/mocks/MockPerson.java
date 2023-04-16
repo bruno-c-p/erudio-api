@@ -8,6 +8,7 @@ import java.util.List;
 
 public class MockPerson {
 
+
     public Person mockEntity() {
         return mockEntity(0);
     }
@@ -47,8 +48,9 @@ public class MockPerson {
         person.setAddress("Addres Test" + number);
         person.setFirstName("First Name Test" + number);
         person.setGender(((number % 2)==0) ? "Male" : "Female");
-        person.setId(number.longValue());
+        person.setKey(number.longValue());
         person.setLastName("Last Name Test" + number);
         return person;
     }
+
 }
