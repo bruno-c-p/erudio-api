@@ -1,8 +1,11 @@
 package br.com.erudio.erudioapi.services;
 
+import br.com.erudio.erudioapi.data.vo.PersonVO;
 import br.com.erudio.erudioapi.exceptions.ResourceNotFoundException;
 import br.com.erudio.erudioapi.models.Person;
 import br.com.erudio.erudioapi.repositories.PersonRepository;
+import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -11,44 +14,42 @@ import java.util.logging.Logger;
 @Service
 public class PersonService {
     private final Logger logger = Logger.getLogger(PersonService.class.getName());
-    private final PersonRepository personRepository;
+    @Autowired
+    private PersonRepository personRepository;
+    @Autowired
+    private ModelMapper mapper;
 
-    public PersonService(PersonRepository personRepository) {
-        this.personRepository = personRepository;
-    }
-
-    public List<Person> findAll() {
+    public List<PersonVO> findAll() {
         logger.info("Listing all persons");
-        return personRepository.findAll();
+        List<Person> persons = personRepository.findAll();
+        return persons.stream().map(person -> mapper.map(person, PersonVO.class)).toList();
     }
 
-    public Person findById(Long id) {
+    public PersonVO findById(Long id) {
         logger.info("Listing one person");
-        return personRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Person not found"));
+        Person entity = personRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Person not found"));
+        return mapper.map(entity, PersonVO.class);
     }
 
-    public Person create(Person person) {
+    public PersonVO create(PersonVO person) {
         logger.info("Creating one person");
-        return personRepository.save(person);
+        Person entity = mapper.map(person, Person.class);
+        return mapper.map(personRepository.save(entity), PersonVO.class);
     }
 
-    public Person update(Person person) {
+    public PersonVO update(PersonVO person) {
         logger.info("Updating one person");
-        Person foundPerson = personRepository
-                .findById(person.getId())
-                .orElseThrow(() -> new ResourceNotFoundException("Person not found"));
-        foundPerson.setFirstName(person.getFirstName());
-        foundPerson.setLastName(person.getLastName());
-        foundPerson.setAddress(person.getAddress());
-        foundPerson.setGender(person.getGender());
-        return personRepository.save(person);
+        Person entity = mapper.map(findById(person.getId()), Person.class);
+        entity.setFirstName(person.getFirstName());
+        entity.setLastName(person.getLastName());
+        entity.setAddress(person.getAddress());
+        entity.setGender(person.getGender());
+        return mapper.map(personRepository.save(entity), PersonVO.class);
     }
 
     public void delete(Long id) {
         logger.info("Deleting one person");
-        Person foundPerson = personRepository
-                .findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Person not found"));
+        this.findById(id);
         personRepository.deleteById(id);
     }
 }
