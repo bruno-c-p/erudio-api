@@ -2,6 +2,7 @@ package br.com.erudio.erudioapi.services;
 
 import br.com.erudio.erudioapi.controllers.PersonController;
 import br.com.erudio.erudioapi.data.vo.PersonVO;
+import br.com.erudio.erudioapi.exceptions.RequiredObjectIsNullException;
 import br.com.erudio.erudioapi.exceptions.ResourceNotFoundException;
 import br.com.erudio.erudioapi.mapper.DozerMapper;
 import br.com.erudio.erudioapi.models.Person;
@@ -42,6 +43,7 @@ public class PersonService {
 
     public PersonVO create(PersonVO person) {
         logger.info("Creating one person!");
+        if (person == null) throw new RequiredObjectIsNullException();
         Person entity = DozerMapper.parseObject(person, Person.class);
         PersonVO vo =  DozerMapper.parseObject(repository.save(entity), PersonVO.class);
         vo.add(linkTo(methodOn(PersonController.class).findById(vo.getKey())).withSelfRel());
@@ -50,6 +52,7 @@ public class PersonService {
 
     public PersonVO update(PersonVO person) {
         logger.info("Updating one person!");
+        if (person == null) throw new RequiredObjectIsNullException();
         Person entity = DozerMapper.parseObject(this.findById(person.getKey()), Person.class);
         entity.setFirstName(person.getFirstName());
         entity.setLastName(person.getLastName());
